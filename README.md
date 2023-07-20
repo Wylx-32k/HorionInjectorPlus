@@ -10,4 +10,4 @@ HorionInjector+: https://www.virustotal.com/gui/file/28ace1f4b5920acfddcf5ece585
 Compared to Horion (to prove they're false positives): https://www.virustotal.com/gui/file/2d79af8e1ff3465703e1dc73d3ef2182fd269ea2609c8afabdf1b80693405c1d
 
 # Credits
-DLLs provided by USSR, Injector made by Chocolate Milk.
+DLLs provided by USSR and Shuit, Injector made by Chocolate Milk.
