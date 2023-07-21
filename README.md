@@ -14,7 +14,7 @@ HorionInjector+ is a DLL Archive from 1.18 to Now, I will try to update the DLLs
 NOTE THAT IT IS OPEN SOURCE
 
 Scan on Virus Total, if you're too lazy to do that, heres a prescan:
-HorionInjector+(https://www.virustotal.com/gui/file/117974f865198b42b2fd78c5429b638f217dc63976b412c49789e79f540c9821/)
+HorionInjector+(https://www.virustotal.com/gui/file/b071c58a0d3d8fa56b70bec25e8f6be18bef4631dfadfa6c44213af64a08ba1a)
 Compared to Horion (to prove they're false positives): https://www.virustotal.com/gui/file/2d79af8e1ff3465703e1dc73d3ef2182fd269ea2609c8afabdf1b80693405c1d
 
 # Credits
