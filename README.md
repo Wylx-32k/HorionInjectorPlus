@@ -9,6 +9,8 @@ Go back in time with HorionInjector+!
 HorionInjector+ is a DLL Archive from 1.18 to Now, I will try to update the DLLs frequently.
 
 # Is it safe
+![image](https://github.com/Wylx-32k/HorionInjectorPlus/assets/96555086/8f8a2d4d-918d-4b0c-a297-2dd6cae143d6)
+
 NOTE THAT IT IS OPEN SOURCE
 
 Scan on Virus Total, if you're too lazy to do that, heres a prescan:
