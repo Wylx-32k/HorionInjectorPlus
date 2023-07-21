@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -64,7 +64,11 @@ namespace HorionInjectorPlus
             process.WaitForExit();
             return output;
         }
-
+        static List<T> FlipList<T>(List<T> inputList)
+        {
+            inputList.Reverse();
+            return inputList;
+        }
         private async Task LoadDataAsync()
         {
             WebClient wb = new WebClient();
@@ -102,7 +106,8 @@ namespace HorionInjectorPlus
                 MessageBox.Show("The GitHub page is updating! Please try again later, or maybe its just your wifi.", "HorionInjector+");
                 Application.Exit();
             }
-            foreach (var value in commits)
+            
+            foreach (var value in FlipList(commits))
             {
                 Button b = new Button();
                 b.Font = new Font("Segoe UI Semibold", 7, FontStyle.Bold);
@@ -494,6 +499,158 @@ namespace HorionInjectorPlus
         }
     }
 
-   
+    public partial class CustomScrollbarUserControl : UserControl
+    {
+        private int thumbPosition;
+        public int thumbSize;
+        private int thumbMinimumSize = 20;
+        private bool isDraggingThumb;
+        private int thumbOffsetOnClick;
+        private int maxValue = 150;
+
+        public event EventHandler<int> ScrollChanged;
+
+        private readonly Color scrollbarColor = Color.FromArgb(20, 20, 20);
+        private readonly Color thumbColor = Color.FromArgb(40, 40, 40);
+        public
+        const int scrollbarWidth = 10;
+        private
+        const int scrollbarMargin = 2;
+        private
+        const int scrollbarRadius = 1;
+
+        public void setMaxValue(int value)
+        {
+            maxValue = value;
+        }
+
+        public CustomScrollbarUserControl()
+        {
+            DoubleBuffered = true;
+            thumbPosition = 0;
+            thumbSize = 50;
+
+            this.Size = new Size(scrollbarWidth, 200);
+            this.BackColor = Color.Transparent;
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            Refresh();
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            DrawScrollbar(e.Graphics);
+        }
+
+        private void DrawScrollbar(Graphics g)
+        {
+            Rectangle thumbRect = new Rectangle(scrollbarMargin, thumbPosition, scrollbarWidth - 2 * scrollbarMargin, thumbSize);
+            g.Clear(scrollbarColor);
+
+            using (SolidBrush thumbBrush = new SolidBrush(thumbColor))
+            {
+                FillRoundedRectangle(g, thumbBrush, thumbRect, scrollbarRadius);
+            }
+        }
+
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            base.OnMouseDown(e);
+            if (e.Button == MouseButtons.Left && GetThumbRectangle().Contains(e.Location))
+            {
+                isDraggingThumb = true;
+                thumbOffsetOnClick = e.Y - thumbPosition;
+            }
+        }
+
+        protected override void OnMouseUp(MouseEventArgs e)
+        {
+            base.OnMouseUp(e);
+            isDraggingThumb = false;
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+            if (isDraggingThumb)
+            {
+                int newPosition = e.Y - thumbOffsetOnClick;
+                thumbPosition = Math.Max(0, Math.Min(Height - thumbSize, newPosition));
+                OnScrollChanged();
+                Invalidate();
+            }
+        }
+
+        private void OnScrollChanged()
+        {
+            int maxScrollValue = Height - thumbSize;
+            int scrollValue = (maxScrollValue > 0) ? thumbPosition * maxValue / maxScrollValue : 0;
+            ScrollChanged?.Invoke(this, scrollValue);
+        }
+
+        protected override void OnMouseWheel(MouseEventArgs e)
+        {
+            base.OnMouseWheel(e);
+
+            int scrollChange = e.Delta / SystemInformation.MouseWheelScrollDelta;
+            int maxScrollValue = Height - thumbSize;
+
+            if (maxScrollValue > 0)
+            {
+                thumbPosition = Math.Max(0, Math.Min(maxScrollValue, thumbPosition - scrollChange));
+                OnScrollChanged();
+                Invalidate();
+            }
+        }
+
+        private Rectangle GetThumbRectangle()
+        {
+            return new Rectangle(scrollbarMargin, thumbPosition, scrollbarWidth - 2 * scrollbarMargin, thumbSize);
+        }
+        public int ThumbPosition
+        {
+            get
+            {
+                return thumbPosition;
+            }
+            set
+            {
+                int maxScrollValue = Height - thumbSize;
+                thumbPosition = Math.Max(0, Math.Min(maxScrollValue, value));
+                OnScrollChanged();
+                Invalidate();
+            }
+        }
+
+        public void TriggerScrollChanged()
+        {
+            OnScrollChanged();
+            Invalidate();
+        }
+        private void FillRoundedRectangle(Graphics g, Brush brush, Rectangle bounds, int radius)
+        {
+            int diameter = radius * 2;
+            Rectangle arcRect = new Rectangle(bounds.Location, new Size(diameter, diameter));
+
+            g.FillPie(brush, arcRect, 180, 90);
+
+            arcRect.X = bounds.Right - diameter;
+            g.FillPie(brush, arcRect, 270, 90);
+
+            arcRect.Y = bounds.Bottom - diameter;
+            g.FillPie(brush, arcRect, 0, 90);
+
+            arcRect.X = bounds.Left;
+            g.FillPie(brush, arcRect, 90, 90);
+
+            g.FillRectangle(brush, bounds.Left + radius, bounds.Top, bounds.Width - diameter, bounds.Height);
+            g.FillRectangle(brush, bounds.Left, bounds.Top + radius, bounds.Width, bounds.Height - diameter);
+        }
+
+    }
 
 }
