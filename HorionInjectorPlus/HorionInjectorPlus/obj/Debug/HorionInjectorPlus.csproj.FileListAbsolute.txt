@@ -1,0 +1,10 @@
+C:\Users\julie\source\repos\HorionInjectorPlus\HorionInjectorPlus\bin\Debug\HorionInjectorPlus.exe.config
+C:\Users\julie\source\repos\HorionInjectorPlus\HorionInjectorPlus\bin\Debug\HorionInjectorPlus.exe
+C:\Users\julie\source\repos\HorionInjectorPlus\HorionInjectorPlus\bin\Debug\HorionInjectorPlus.pdb
+C:\Users\julie\source\repos\HorionInjectorPlus\HorionInjectorPlus\obj\Debug\HorionInjectorPlus.csproj.AssemblyReference.cache
+C:\Users\julie\source\repos\HorionInjectorPlus\HorionInjectorPlus\obj\Debug\HorionInjectorPlus.Properties.Resources.resources
+C:\Users\julie\source\repos\HorionInjectorPlus\HorionInjectorPlus\obj\Debug\HorionInjectorPlus.csproj.GenerateResource.cache
+C:\Users\julie\source\repos\HorionInjectorPlus\HorionInjectorPlus\obj\Debug\HorionInjectorPlus.csproj.CoreCompileInputs.cache
+C:\Users\julie\source\repos\HorionInjectorPlus\HorionInjectorPlus\obj\Debug\HorionInjectorPlus.exe
+C:\Users\julie\source\repos\HorionInjectorPlus\HorionInjectorPlus\obj\Debug\HorionInjectorPlus.pdb
+C:\Users\julie\source\repos\HorionInjectorPlus\HorionInjectorPlus\obj\Debug\HorionInjectorPlus.Form1.resources
