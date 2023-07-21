@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualBasic;
+using Microsoft.VisualBasic;
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -25,7 +25,13 @@ namespace HorionInjectorPlus
             try
             {
                 var dllInjector = new DLLInjector();
-                Process minecraftProcess = dllInjector.GetOrCreateMinecraftProcess();
+                var minecraftProcess = dllInjector.GetMinecraftProcess();
+
+                if (minecraftProcess == null)
+                {
+                    dllInjector.InstallMinecraftApp();
+                    minecraftProcess = dllInjector.WaitForMinecraftProcess();
+                }
 
                 dllInjector.CheckIfAlreadyInjected(minecraftProcess, path);
                 dllInjector.Inject(minecraftProcess, path);
@@ -37,159 +43,7 @@ namespace HorionInjectorPlus
             }
         }
     }
-    public partial class CustomScrollbarUserControl : UserControl
-    {
-        private int thumbPosition;
-        public int thumbSize;
-        private int thumbMinimumSize = 20;
-        private bool isDraggingThumb;
-        private int thumbOffsetOnClick;
-        private int maxValue = 150;
 
-        public event EventHandler<int> ScrollChanged;
-
-        private readonly Color scrollbarColor = Color.FromArgb(20, 20, 20);
-        private readonly Color thumbColor = Color.FromArgb(40, 40, 40);
-        public
-        const int scrollbarWidth = 10;
-        private
-        const int scrollbarMargin = 2;
-        private
-        const int scrollbarRadius = 1;
-
-        public void setMaxValue(int value)
-        {
-            maxValue = value;
-        }
-
-        public CustomScrollbarUserControl()
-        {
-            DoubleBuffered = true;
-            thumbPosition = 0;
-            thumbSize = 50;
-
-            this.Size = new Size(scrollbarWidth, 200);
-            this.BackColor = Color.Transparent;
-        }
-
-        protected override void OnResize(EventArgs e)
-        {
-            base.OnResize(e);
-            Refresh();
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            DrawScrollbar(e.Graphics);
-        }
-
-        private void DrawScrollbar(Graphics g)
-        {
-            Rectangle thumbRect = new Rectangle(scrollbarMargin, thumbPosition, scrollbarWidth - 2 * scrollbarMargin, thumbSize);
-            g.Clear(scrollbarColor);
-
-            using (SolidBrush thumbBrush = new SolidBrush(thumbColor))
-            {
-                FillRoundedRectangle(g, thumbBrush, thumbRect, scrollbarRadius);
-            }
-        }
-
-        protected override void OnMouseDown(MouseEventArgs e)
-        {
-            base.OnMouseDown(e);
-            if (e.Button == MouseButtons.Left && GetThumbRectangle().Contains(e.Location))
-            {
-                isDraggingThumb = true;
-                thumbOffsetOnClick = e.Y - thumbPosition;
-            }
-        }
-
-        protected override void OnMouseUp(MouseEventArgs e)
-        {
-            base.OnMouseUp(e);
-            isDraggingThumb = false;
-        }
-
-        protected override void OnMouseMove(MouseEventArgs e)
-        {
-            base.OnMouseMove(e);
-            if (isDraggingThumb)
-            {
-                int newPosition = e.Y - thumbOffsetOnClick;
-                thumbPosition = Math.Max(0, Math.Min(Height - thumbSize, newPosition));
-                OnScrollChanged();
-                Invalidate();
-            }
-        }
-
-        private void OnScrollChanged()
-        {
-            int maxScrollValue = Height - thumbSize;
-            int scrollValue = (maxScrollValue > 0) ? thumbPosition * maxValue / maxScrollValue : 0;
-            ScrollChanged?.Invoke(this, scrollValue);
-        }
-
-        protected override void OnMouseWheel(MouseEventArgs e)
-        {
-            base.OnMouseWheel(e);
-
-            int scrollChange = e.Delta / SystemInformation.MouseWheelScrollDelta;
-            int maxScrollValue = Height - thumbSize;
-
-            if (maxScrollValue > 0)
-            {
-                thumbPosition = Math.Max(0, Math.Min(maxScrollValue, thumbPosition - scrollChange));
-                OnScrollChanged();
-                Invalidate();
-            }
-        }
-
-        private Rectangle GetThumbRectangle()
-        {
-            return new Rectangle(scrollbarMargin, thumbPosition, scrollbarWidth - 2 * scrollbarMargin, thumbSize);
-        }
-        public int ThumbPosition
-        {
-            get
-            {
-                return thumbPosition;
-            }
-            set
-            {
-                int maxScrollValue = Height - thumbSize;
-                thumbPosition = Math.Max(0, Math.Min(maxScrollValue, value));
-                OnScrollChanged();
-                Invalidate();
-            }
-        }
-
-        public void TriggerScrollChanged()
-        {
-            OnScrollChanged();
-            Invalidate();
-        }
-        private void FillRoundedRectangle(Graphics g, Brush brush, Rectangle bounds, int radius)
-        {
-            int diameter = radius * 2;
-            Rectangle arcRect = new Rectangle(bounds.Location, new Size(diameter, diameter));
-
-            g.FillPie(brush, arcRect, 180, 90);
-
-            arcRect.X = bounds.Right - diameter;
-            g.FillPie(brush, arcRect, 270, 90);
-
-            arcRect.Y = bounds.Bottom - diameter;
-            g.FillPie(brush, arcRect, 0, 90);
-
-            arcRect.X = bounds.Left;
-            g.FillPie(brush, arcRect, 90, 90);
-
-            g.FillRectangle(brush, bounds.Left + radius, bounds.Top, bounds.Width - diameter, bounds.Height);
-            g.FillRectangle(brush, bounds.Left, bounds.Top + radius, bounds.Width, bounds.Height - diameter);
-        }
-
-    }
     public class DLLInjector
     {
         private const int PROCESS_VM_OPERATION = 0x0008;
@@ -232,45 +86,29 @@ namespace HorionInjectorPlus
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        public Process GetOrCreateMinecraftProcess()
+        public Process GetMinecraftProcess()
         {
-            Process[] processes = Process.GetProcessesByName("Minecraft.Windows");
-            return processes.Length > 0 ? processes[0] : InstallAndLaunchMinecraftApp();
+            var processes = Process.GetProcessesByName("Minecraft.Windows");
+            return processes.Length > 0 ? processes[0] : null;
         }
-        static bool IsMinecraftInstalled()
-        {
-            string script = "$packageName = '*Minecraft*'; $packageFound = Get-AppxPackage | Where-Object { $_.Name -like $packageName }; [bool]($packageFound -ne $null)";
-            ProcessStartInfo psi = new ProcessStartInfo("powershell.exe", $"-Command \"{script}\"")
-            {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
 
-            Process process = new Process
-            {
-                StartInfo = psi
-            };
-            process.Start();
-            string output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-            return bool.Parse(output.Trim());
-        }
-        public Process InstallAndLaunchMinecraftApp()
+        public void InstallMinecraftApp()
         {
-            if (!IsMinecraftInstalled())
+            if (Interaction.Shell("explorer.exe shell:appsFolder\\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", Wait: false) == 0)
             {
                 throw new Exception("Please install Minecraft before using HorionInjectorPlus.");
             }
-            Process.Start("explorer.exe", "shell:appsFolder\\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App");
+        }
+
+        public Process WaitForMinecraftProcess()
+        {
             int t = 0;
             Process[] processes;
             while ((processes = Process.GetProcessesByName("Minecraft.Windows")).Length == 0)
             {
                 if (++t > 200)
                 {
-                    throw new Exception("Unable to launch Minecraft, launch it yourself.");
+                    throw new Exception("Unable to launch Minecraft.");
                 }
                 Thread.Sleep(10);
             }
@@ -280,9 +118,9 @@ namespace HorionInjectorPlus
 
         public void CheckIfAlreadyInjected(Process process, string path)
         {
-            foreach (ProcessModule module in process.Modules)
+            for (int i = 0; i < process.Modules.Count; i++)
             {
-                if (module.FileName == path)
+                if (process.Modules[i].FileName == path)
                 {
                     throw new Exception("Horion is already injected!");
                 }
